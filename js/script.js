@@ -1,4 +1,11 @@
 'use strict';
+const templates = {
+  articleLink: Handlebars.compile(document.querySelector('#template-article-link').innerHTML),
+  articleTag: Handlebars.compile(document.querySelector('#template-article-tag').innerHTML),
+  articleAuthor: Handlebars.compile(document.querySelector('#template-article-author').innerHTML),
+  tagCloudLink: Handlebars.compile(document.querySelector('#template-tag-cloud-link').innerHTML),
+  authorLink: Handlebars.compile(document.querySelector('#template-author-cloud-link').innerHTML),
+}
 
 const optArticleSelector = '.post';
 const optTitleSelector = '.post-title';
@@ -8,9 +15,6 @@ const optArticleAuthorSelector = '.post-author';
 const optCloudClassCount = 5;
 const optCloudClassPrefix= 'tag-size-';
 
-// !!!!!!!!!!!!!TITLE JS SECTION!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!TITLE JS SECTION!!!!!!!!!!!!!!!!!
-// !!!!!!!!!!!!!TITLE JS SECTION!!!!!!!!!!!!!!!!!
 function titleClickHandler(event){
   event.preventDefault();  
   const clickedElement = this;
@@ -31,7 +35,6 @@ function titleClickHandler(event){
     const targetArticle = document.querySelector(articleSelector);
     targetArticle.classList.add('active');
   }
-
 function generateTitleLinks(customSelector = ''){
   const titleList = document.querySelector(optTitleListSelector);
   titleList.innerHTML = '';
@@ -41,7 +44,8 @@ function generateTitleLinks(customSelector = ''){
   const titleList = document.querySelector(optTitleListSelector);
   const articleId = article.getAttribute("id");
   const articleTitle = article.querySelector(optTitleSelector).innerHTML;
-  const linkHTML = '<li><a href="#' + articleId + '"><span>' + articleTitle + '</span></a></li>';
+  const linkHTMLData = {id: articleId, title: articleTitle};
+const linkHTML = templates.articleLink(linkHTMLData);
     titleList.insertAdjacentHTML('beforeend',linkHTML)
   }
 }
@@ -52,9 +56,7 @@ for(let link of links){
   link.addEventListener('click', titleClickHandler);
   
 }
-//// !!!!!!!!!!!!!TAG JS SECTION!!!!!!!!!!!!!!!!!
-//// !!!!!!!!!!!!!TAG JS SECTION!!!!!!!!!!!!!!!!!
-//// !!!!!!!!!!!!!TAG JS SECTION!!!!!!!!!!!!!!!!!
+
 function calculateTagClass( count, params){
 const normalizedCount= count- params.min
 const normalizedMax= params.max - params.min
@@ -81,9 +83,10 @@ for( let article of articles){
   /* START LOOP: for each tag */
 for(let tag of articleTagsArray){
   /* generate HTML of the link */
-  const tagText = '<li><a href=#tag-'+ tag + '>'+ tag +'</a></li>';
+  const linkHTMLData = {id: articleTags, title: tag};
+const linkHTML = templates.articleTag(linkHTMLData);
   /* add generated code to html variable */
-  innerTagText += ' ' + tagText;
+  innerTagText += ' ' + linkHTML;
   /* [NEW] check if this link is NOT already in allTags */
   if(!allTags.hasOwnProperty(tag)){
     /* [NEW] add generated code to allTags array */
@@ -98,21 +101,17 @@ tagsList.insertAdjacentHTML("afterbegin",innerTagText);
 /* [NEW] find list of tags in right column */
 const tagList = document.querySelector('.tags');
 const tagsParams= calculateTagsParams(allTags);
-console.log('TagParams:',tagsParams);
 
-
-  let allTagsHTML='';
+const allTagsData = {tags: []};
   for( let tag in allTags ){
-    
-    const tagLinkHTML='<li>'+'<a class="'+ calculateTagClass(allTags[tag],tagsParams)+'"href=#tag-'+ tag + '>'+ tag +'.'+'</a></li>'; 
-    console.log(tagLinkHTML);
-    allTagsHTML += tagLinkHTML;
+    allTagsData.tags.push({
+      tag: tag,
+      count: allTags[tag],
+      className: calculateTagClass(allTags[tag], tagsParams)
+    });
   }
-  tagList.innerHTML = allTagsHTML;
-console.log(allTags)
-
+  tagList.innerHTML = templates.tagCloudLink(allTagsData);
 }
-
 generateTags();
 calculateTagsParams();
 function calculateTagsParams (tags) {
@@ -163,7 +162,6 @@ hrefTagLink.classList.add('active')
   /* execute function "generateTitleLinks" with article selector as argument */
   generateTitleLinks('[data-tags~="' + tag + '"]');
 }
-
 function addClickListenersToTags(){
   /* find all links to tags */
   const tagLinks = document.querySelectorAll('[href^="#tag-"]');
@@ -175,28 +173,41 @@ function addClickListenersToTags(){
   }
 }
 addClickListenersToTags();
-//// !!!!!!!!!!!!!AUTHOR JS SECTION!!!!!!!!!!!!!!!!!
-//// !!!!!!!!!!!!!AUTHOR JS SECTION!!!!!!!!!!!!!!!!!
-//// !!!!!!!!!!!!!AUTHOR JS SECTION!!!!!!!!!!!!!!!!!
 function generateAuthors(){
+  let allAuthors={};
   const articles = document.querySelectorAll('.post');
-  let authorConfirmArray=[];
+  
   for( let article of articles){
     const authorList = article.querySelector(optArticleAuthorSelector);
-    let innerAuthorText = '';
+    let innerAuthorText='';
     const authorName = article.getAttribute('data-author')
-    const authorNameName = '<a href=#Author-'+ authorName + '>'+ authorName +'</a></li>';
-    innerAuthorText = '' + authorNameName;
-    authorList.insertAdjacentHTML("afterbegin",innerAuthorText);
-    const authorSideList = document.querySelector('.authors');
-    
-    if(!authorConfirmArray.includes(authorName)){
-    authorConfirmArray.push(authorName); // Thats not what i was supposed to do, but it works :)  
-    authorSideList.insertAdjacentHTML("afterbegin",'<li><a class="author" href=#Author-'+ authorName +'>'+authorName+' '+'</a></li>');
+    const articleAuthorsArray = authorName.split(' ');
+    for(let author of articleAuthorsArray){
+    const linkHTMLData = {id: authorName, title: authorName};
+    const linkHTML = templates.articleAuthor(linkHTMLData);
+    innerAuthorText += ' ' + linkHTML;
+    if(!allAuthors.hasOwnProperty(author)){
+      /* [NEW] add generated code to allTags array */
+      allAuthors[author]= 1;
+    }else{
+      allAuthors[author]++;
+    }
   }
     
+    authorList.insertAdjacentHTML("afterbegin",innerAuthorText);
+    
+  }
+    const authorSideList = document.querySelector('.authors'); 
+    const allAuthorsData = {authors: []};
+  for( let author in allAuthors ){
+    allAuthorsData.authors.push({
+      author: author,
+      class: 'author'
+  });
 }
+authorSideList.innerHTML = templates.authorLink(allAuthorsData);
 }
+
 generateAuthors();
 function authorClickHandler(event){
 event.preventDefault();

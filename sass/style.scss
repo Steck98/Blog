@@ -39,6 +39,7 @@ body {
     text-transform: none;
     font-weight: 400;
     color: lighten($color-dark, 20%);
+    
   }
 }
 .tag-size-1 {
@@ -144,7 +145,11 @@ body {
 }
 
 /* Authors */
-
+.post-author{
+  li{
+    list-style:none;
+  }
+}
 .authors {
   li {
     margin-bottom: 12px;

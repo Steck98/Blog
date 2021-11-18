@@ -3,6 +3,9 @@ module.exports = {
         "browser": true,
         "es2021": true
     },
+    "globals": {
+        "Handlebars": false
+      },
     "extends": [
         "eslint:recommended",
         "plugin:react/recommended"

@@ -189,28 +189,22 @@ function generateAuthors(){
     innerAuthorText = '' + authorNameName;
     authorList.insertAdjacentHTML("afterbegin",innerAuthorText);
     const authorSideList = document.querySelector('.authors');
+    
     if(!authorConfirmArray.includes(authorName)){
     authorConfirmArray.push(authorName); // Thats not what i was supposed to do, but it works :)  
-    authorSideList.insertAdjacentHTML("afterbegin",'<li><a class="author"href=#Author-'+ authorName +'</a>'+authorName+' '+'</li>');
+    authorSideList.insertAdjacentHTML("afterbegin",'<li><a class="author" href=#Author-'+ authorName +'>'+authorName+' '+'</a></li>');
   }
     
 }
 }
- 
-
-  
-
-    
-
-
 generateAuthors();
-
 function authorClickHandler(event){
 event.preventDefault();
 const clickedElement= this;
 const href = clickedElement.getAttribute("href");
 const author = href.replace('#Author-', '');
-const authorLinks = document.querySelectorAll('a.active[href^="Author-"]')
+const authorLinks = document.querySelectorAll('a.active[href^="#Author-"]')
+console.log(authorLinks);
 for(let authorLink of authorLinks){
   authorLink.classList.remove('active');
 }
@@ -223,7 +217,6 @@ hrefAuthorLink.classList.add('active')
 
 generateTitleLinks('[data-author="' + author + '"]');
 }
-
 function addClickListenersToAuthor(){
 const authorLinks = document.querySelectorAll('[href^="#Author-"]');
 for (let authorLink of authorLinks){
